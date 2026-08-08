@@ -1,0 +1,25 @@
+{
+  "name": "redbelly-wiki-verification-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reproduces and verifies every fix in the Redbelly Network troubleshooting wiki against the live testnet.",
+  "scripts": {
+    "verify": "node verify.mjs",
+    "verify:sdk": "node verify.mjs --github-token",
+    "deep": "hardhat run scripts/deep-checks.ts --network redbellyTestnet",
+    "compile": "hardhat compile",
+    "all": "bash run.sh"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.15",
+    "@nomicfoundation/hardhat-verify": "^3.0.22",
+    "@types/node": "^22.8.5",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.12.0",
+    "typescript": "~6.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

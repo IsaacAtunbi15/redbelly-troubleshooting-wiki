@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-08-08T13:10:10.654648+00:00",
+  "note": "External link reachability check, run from the authoring environment. harness/verify.mjs re-checks these from the runner's own network.",
+  "total": 18,
+  "ok": 18,
+  "results": [
+    {
+      "url": "https://access.redbelly.network",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://api.etherscan.io/v2/chainlist",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://chainid.network/chains.json",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://docs.redbelly.network/pages/eligibility-sdk/backend/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://docs.redbelly.network/pages/eligibility-sdk/client/hooks/useHasChainPermission/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://docs.redbelly.network/pages/eligibility-sdk/getting-started/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://docs.redbelly.network/pages/eligibility-sdk/installation/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://docs.redbelly.network/pages/general/rb-env/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://github.com/0xPolygonID/phase2ceremony",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://github.com/ethereum/solidity/releases",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://github.com/settings/tokens",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://redbelly.faucetme.pro",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://vine.redbelly.network/consensus/evm-compatibility/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://vine.redbelly.network/environments/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://vine.redbelly.network/identity/user-access/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://vine.redbelly.network/native-currency/testing-coins/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://vine.redbelly.network/network-fees/",
+      "status": "200",
+      "ok": true
+    },
+    {
+      "url": "https://vine.redbelly.network/smart-contracts/",
+      "status": "200",
+      "ok": true
+    }
+  ]
+}
