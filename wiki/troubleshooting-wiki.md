@@ -33,11 +33,11 @@ and package name was read from a live source on the date in the footer, not from
 > below was read from a live source on that date and is traced in
 > [`sources.md`](../evidence/sources.md).
 >
-> **Execution status:** the fixes here are derived from those sources and from the documented
-> behaviour of the tooling; they have **not yet been executed end-to-end against Redbelly
-> Testnet**. A verification harness that does exactly that ships in [`harness/`](../harness/)
-> and can be run by anyone — see [Verification and evidence](#verification-and-evidence).
-> Entries that fail once it is run will be corrected or removed.
+> **Verified:** 8 August 2026. A verification harness was run against the live network:
+> **30 of 33 checks passed**, and the log ships as
+> [`verification-log.json`](../evidence/verification-log.json). Three checks changed what this
+> guide says — see [Verification and evidence](#verification-and-evidence). On-chain
+> state-changing checks (deploy, nonce reuse, contract verification) have not been run.
 
 ---
 
@@ -146,7 +146,9 @@ Redbelly publishes two documentation sites, and they do not agree:
 | Technical docs — `docs.redbelly.network/pages/general/rb-env/` | **154** | No — "Coming Soon" |
 | `chainid.network` / ethereum-lists registry | **151** | Yes |
 
-**151 is correct.** Three independent confirmations:
+**151 is correct.** Confirmed directly by the Redbelly team: asked in the Redbelly Telegram
+on 8 August 2026 which mainnet chain ID is right, moderator **Appie** answered **"The chain
+ID is 151."** Three further independent confirmations:
 
 1. The Vine portal — the current developer portal — publishes 151 with a working RPC URL.
 2. The `chainid.network` registry lists chain 151 as `Redbelly Network Mainnet`, status
@@ -437,11 +439,13 @@ Redbelly does not publish a numeric limit, so the practical approach is to treat
 expected under burst load and handle it, rather than to design against a specific published
 threshold.
 
-> **Basis for this entry.** No 429 was observed while writing this guide — the limit is
-> inferred from the endpoints being shared public infrastructure, not measured. This entry is
-> therefore a defensive pattern rather than a report of a confirmed threshold. The harness
-> fires a 40-request burst (`A4.1`) and records what actually happens; if no rate limiting
-> appears, this entry will be reworded or removed.
+> **Basis for this entry, measured.** A 40-request parallel burst against the testnet
+> endpoint on 8 August 2026 (check `A4.1`) returned **HTTP 200 on all 40** — no rate limiting
+> was triggered at that volume. So this entry is a **defensive pattern for sustained or
+> high-volume load, not a report of a threshold you will hit casually.** If you are seeing
+> 429s, the cause is more likely per-component polling or unbatched historical reads than
+> normal application traffic. The patterns below still apply; treat them as good practice
+> rather than as a fix for a limit that 40 parallel calls did not reach.
 
 Two client-side patterns trigger it far more often than raw transaction volume:
 
@@ -1059,16 +1063,20 @@ Or `estimateGas` resolves to `null`, and passing that value onward throws a type
 reporting a real problem, not failing at its job. On Redbelly there are four causes, and the
 first is specific to this chain:
 
-1. **The sender has no network access credential.** Redbelly is permissioned; a
-   non-enabled address cannot write. Estimation reverts with no reason string. See
-   [D1](#d1) — this is the cause that has no equivalent on other EVM chains, and it is the
-   one people rule out last.
+1. **The sender has no network access credential.** Redbelly is permissioned; a non-enabled
+   address cannot send. **Note that this cause does *not* show up here** — measured on
+   8 August 2026, estimation succeeds normally for un-onboarded addresses, because the
+   permission gate applies at execution rather than estimation. So a clean estimate does not
+   clear the address. See [D1](#d1), which has a check that works.
 2. **The sender cannot cover `gas x price + value`.** At ~165,000 gwei ([C1](#c1)), an
    RBNT balance that looks generous by Ethereum intuition may not be. See [E2](#e2).
 3. **The contract call genuinely reverts** — failed `require`, wrong arguments, wrong
    contract address.
-4. **`from` is missing.** Without it the node estimates from the zero address, which holds
-   no balance and no permission, so the estimate fails for reasons unrelated to your code.
+4. **`from` is missing.** Conventionally the node then estimates from the zero address and
+   the estimate fails for reasons unrelated to your code. **Measured caveat:** on Redbelly,
+   a simple self-transfer estimate returned the same `0x5f12` with and without `from`
+   (check `C3.1`, 8 August 2026), so this cause is not universal here. Send `from` anyway —
+   it costs nothing and matters for calls whose logic depends on `msg.sender`.
 
 ### Solution
 
@@ -1155,13 +1163,12 @@ async function preflight(provider, address) {
   const balance = await provider.getBalance(address);
   if (balance === 0n) throw new Error(`${address} holds no RBNT — fund via the faucet`);
 
+  // Note: estimateGas cannot detect a missing network access credential on Redbelly —
+  // it succeeds for un-onboarded addresses. Use useHasChainPermission (see D1) for that.
   try {
     await provider.estimateGas({ from: address, to: address, value: 0n });
   } catch {
-    throw new Error(
-      `${address} cannot transact — most likely no network access credential. ` +
-      `Enable it at https://access.redbelly.network`
-    );
+    throw new Error(`${address} cannot estimate a bare self-transfer — check balance and RPC`);
   }
 }
 ```
@@ -1282,8 +1289,15 @@ execution reverted
 Error: transaction execution reverted (no reason string)
 ```
 
-The tell is that **even a zero-value transfer to yourself fails**. That rules out your
-contract entirely — the address itself cannot write to the chain.
+The tell is that **a zero-value transfer to yourself fails when actually sent**. That rules
+out your contract entirely — the address itself cannot write to the chain.
+
+> **Important, and measured:** the failure appears when the transaction is *submitted*, not
+> when it is estimated. A harness run on 8 August 2026 (check `D1.1`) called
+> `eth_estimateGas` for a self-transfer from a freshly generated, never-onboarded address and
+> received a normal `0x5208` (21,000 gas) — a clean estimate. **Permissioning is enforced at
+> execution, not at estimation, so `eth_estimateGas` succeeding tells you nothing about
+> whether an address may send.** See the Solution below for a check that does work.
 
 ### Root Cause
 
@@ -1294,14 +1308,31 @@ Vine portal:
 > credential from a network accredited issuer before they self enable their account with
 > write access to the network through a specific network smart contract."
 
-> **Scope note.** A Redbelly team member stated in the project Discord on 5 August 2026 that
-> building on Redbelly is permissionless. That is not necessarily a contradiction — deploying
-> and interacting as a *developer* may sit under a different access path than end-user
-> onboarding, and the two statements may be answering different questions. This entry
-> reflects the documented credential requirement above. The harness probes an un-onboarded
-> address directly (checks `D1.1`, `D1.3`); if that address transacts successfully, this entry
-> is wrong and will be rewritten. Until that run happens, treat the symptom checklist as the
-> reliable part and the scope of the requirement as open.
+> **Confirmed by the Redbelly team.** Asked directly in the Redbelly Telegram on 8 August
+> 2026 whether an address that has not been through `access.redbelly.network` can send a
+> testnet transaction, moderator **Appie** answered: **"No, they can't."** In a follow-up the
+> same day, they set out the boundary precisely:
+>
+> > "building is still permissionless, but in order to make a transaction (sending), you will
+> > need to go through KYC/KYB. However, you can receive without the need for KYC/KYB."
+>
+> So there are three distinct capabilities, not two:
+>
+> | Action | Needs KYC/KYB? |
+> |---|---|
+> | **Building** — writing, compiling, working on contracts | No |
+> | **Receiving** — holding RBNT, being sent tokens | **No** |
+> | **Sending** — any transaction that writes to the chain | **Yes** |
+>
+> **The middle row is why this is so easy to misdiagnose.** An un-onboarded address is not
+> inert: it holds a balance, it receives transfers, and it looks entirely healthy in a wallet.
+> That makes "my address has RBNT in it, so permissioning can't be the problem" a false
+> inference — and it is the single most common wrong turn on this failure. A funded balance
+> tells you nothing about whether the address can send.
+>
+> If you have read that Redbelly is permissionless and are now watching your transactions
+> revert, this is the distinction you are missing. Both statements are true; they describe
+> different actions.
 
 Write access is gated on-chain. An address that has not completed that flow can read state
 all day and cannot send a transaction. Because the gate is enforced at execution, the
@@ -1328,30 +1359,55 @@ checkbox, so it cannot be completed inside a script or a CI job.
 
 ### Solution
 
-**1. Establish whether the address is the problem.** Run this before debugging anything
-else:
+**1. Do not use `eth_estimateGas` to test for this.** It is the obvious check and it does not
+work. Measured on 8 August 2026 against a freshly generated, never-onboarded address:
 
 ```bash
-ADDR=0xYOUR_ADDRESS
-RPC=https://governors.testnet.redbelly.network
-
-curl -s -X POST $RPC -H 'Content-Type: application/json' \
-  --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_estimateGas\",\"params\":[{\"from\":\"$ADDR\",\"to\":\"$ADDR\",\"value\":\"0x0\"}],\"id\":1}"
+curl -s -X POST https://governors.testnet.redbelly.network \
+  -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","method":"eth_estimateGas","params":[{"from":"0xRANDOM_UNONBOARDED","to":"0xRANDOM_UNONBOARDED","value":"0x0"}],"id":1}'
+# {"jsonrpc":"2.0","id":1,"result":"0x5208"}      <- a clean estimate, from an address that cannot send
 ```
 
-- Returns a gas quantity (e.g. `{"result":"0x5208"}`) → the address can write. The problem is
-  in your contract or arguments; go to [C3](#c3).
-- Returns an error → the address cannot write. Continue below.
+Estimation simulates execution without applying the permission gate, so it answers `0x5208`
+for addresses that will nonetheless fail to transact.
 
-**2. Confirm the balance is not the cause**, so you are not chasing the wrong one of two
-possible reasons:
+**2. Use the SDK's permission hook**, which queries the on-chain permission state directly and
+is the only read-only check that answers this question:
+
+```js
+import { useHasChainPermission } from "@redbellynetwork/eligibility-sdk";
+
+const { data: canSend } = useHasChainPermission(address);
+// true  -> address may send
+// false -> address must complete access.redbelly.network first
+```
+
+**3. Without the SDK, send a probe transaction.** A zero-value self-transfer costs one cent
+and gives a definitive answer where estimation does not:
+
+```js
+try {
+  const tx = await wallet.sendTransaction({ to: wallet.address, value: 0n });
+  await tx.wait();
+  console.log("address can send");
+} catch (err) {
+  console.log("address cannot send — claim access at https://access.redbelly.network");
+  console.log("raw:", err.shortMessage ?? err.message);
+}
+```
+
+**4. Check your balance for context, not for diagnosis.**
 
 ```bash
 curl -s -X POST $RPC -H 'Content-Type: application/json' \
   --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"$ADDR\",\"latest\"],\"id\":1}"
 ```
 
-A non-zero result with a failing estimate points at permissioning.
+A non-zero result with a failing estimate points at permissioning. Note that a healthy
+balance is not evidence against this diagnosis — an un-onboarded address can receive RBNT
+without KYC/KYB, so a funded account that cannot send is exactly what this failure looks
+like.
 
 **3. Claim the credential and enable the account.** Go to
 **<https://access.redbelly.network>**, connect the wallet holding that address, and complete
@@ -1388,16 +1444,19 @@ function TransactButton({ address }) {
 }
 ```
 
-**Without the SDK**, the same preflight in plain ethers:
+**Without the SDK**, there is no read-only check that works — estimation does not surface the
+permission gate (see Solution step 1). The reliable options are a one-cent probe transaction
+at startup, or handling the failure when it happens:
 
 ```js
-async function assertCanTransact(provider, address) {
+async function assertCanTransact(wallet) {
   try {
-    await provider.estimateGas({ from: address, to: address, value: 0n });
-  } catch {
+    const tx = await wallet.sendTransaction({ to: wallet.address, value: 0n });
+    await tx.wait();
+  } catch (err) {
     throw new Error(
-      `${address} cannot transact on Redbelly. Claim network access at ` +
-      `https://access.redbelly.network, then retry.`
+      `${wallet.address} cannot send on Redbelly — claim network access at ` +
+      `https://access.redbelly.network, then retry. (${err.shortMessage ?? err.message})`
     );
   }
 }
@@ -2950,10 +3009,39 @@ Every technical claim in this guide is traced to the source it came from in
 rather than taken on trust. The harness in [`harness/`](../harness/) is what does the
 checking.
 
-**Status, stated plainly:** the harness has been written but not yet run end-to-end against
-Redbelly Testnet, so `verification-log.json` does not exist in this repository yet. Nothing
-below claims otherwise. When the run happens, the log lands in `../evidence/` and this
-section is updated with its date and results.
+**Run on 8 August 2026, Node v20.20.2, 23 seconds. Result: 30 PASS, 2 FAIL, 1 SKIP of 33.**
+The full log, with raw responses kept so every conclusion can be re-derived, is
+[`verification-log.json`](../evidence/verification-log.json).
+
+**Three findings changed this guide, and they are the reason the harness exists:**
+
+1. **`eth_estimateGas` does not detect the permission gate** (`D1.1`). A freshly generated,
+   never-onboarded address received a clean `0x5208` estimate for a self-transfer. The guide
+   previously recommended exactly that call as the diagnostic for [D1](#d1). That advice was
+   wrong and has been replaced — permissioning is enforced at execution, not estimation.
+2. **`from` made no difference to a simple estimate** (`C3.1`): `0x5f12` with and without.
+   [C3](#c3)'s fourth root cause has been qualified accordingly.
+3. **No rate limiting at 40 parallel requests** (`A4.1`): 40/40 returned HTTP 200.
+   [A4](#a4) is now explicitly a defensive pattern for sustained load rather than a
+   threshold you will hit casually.
+
+**The two FAILs are broken checks, not wiki errors, and are recorded here rather than
+quietly fixed:**
+
+- `A1.4` reports that the stale mainnet chain ID has been corrected upstream. It has not.
+  The scraper found neither `154` nor `153` on the page, including the testnet value that is
+  demonstrably present, so it is not reading the rendered content. [A1](#a1) stands on
+  `A1.1`–`A1.3`, which all passed against live endpoints and the public registry.
+- `G2.2` returned `{"hasBrokenForm": false, "hasCorrectForm": false}` — neither form of the
+  `.npmrc` line was found, so the check located nothing and proves nothing either way.
+  [G2](#g2) rests on the primary observation of the page rather than on this check.
+
+Both checks need their detection logic rewritten. Recording that is more useful than deleting
+them.
+
+**Not yet run:** the `--deep` stage (contract deployment, nonce reuse, underpriced-transaction
+reproduction, Routescan verification). Those entries rest on documented behaviour and source
+tracing rather than on execution, and this section will say so until that changes.
 
 **What the harness does:**
 
@@ -3072,5 +3160,5 @@ Every technical value in this guide traces to one of these, all read on **8 Augu
 
 ---
 
-**Sources read: 8 August 2026** · Ships with a reproducible verification harness (not yet run —
-see [Verification and evidence](#verification-and-evidence)) · Corrections welcome
+**Sources read and verified: 8 August 2026** · 30 of 33 harness checks passed —
+[log](../evidence/verification-log.json) · Corrections welcome

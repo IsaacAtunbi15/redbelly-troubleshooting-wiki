@@ -3,8 +3,14 @@
 Every fix in the wiki is designed to be executed here rather than asserted. This directory
 produces `../evidence/verification-log.json`.
 
-**Status: written, not yet run.** The log does not exist yet. Stage 1 needs no key, no funds
-and no install, so it can be produced in about two minutes by anyone with Node installed.
+**Last run: 8 August 2026, Node v20.20.2. Result: 30 PASS, 2 FAIL, 1 SKIP of 33.** Log at
+[`../evidence/verification-log.json`](../evidence/verification-log.json). Stage 1 needs no
+key, no funds and no install, so anyone can reproduce it in about two minutes.
+
+**Known defects in this harness:** checks `A1.4` and `G2.2` both scrape rendered pages and
+both failed to locate content that is present, reporting "upstream corrected" when the
+upstream is unchanged. Their detection logic needs rewriting. They are left in place, and
+their misleading notes documented, rather than deleted.
 
 The task's Accuracy benchmark says *"Technical reviewer tests at least 5 solutions to verify
 they actually fix the stated problems."* This harness covers all 22 entries, not 5, so once
@@ -115,7 +121,11 @@ entry whose fix cannot be reproduced gets **cut**, not published with an asteris
 verified entries clears the task's minimum of fifteen; twenty entries with four unverifiable
 ones is a worse submission, because the gap is citable.
 
-This rule has not yet been exercised, because the harness has not yet been run.
+This rule was exercised on 8 August 2026. No entry was cut: the three checks whose
+observations contradicted the guide (`D1.1`, `C3.1`, `A4.1`) resulted in corrections to
+[D1](../wiki/troubleshooting-wiki.md#d1), [C3](../wiki/troubleshooting-wiki.md#c3) and
+[A4](../wiki/troubleshooting-wiki.md#a4) rather than removals, because in each case the entry
+was right about the failure and wrong about how to detect it.
 
 Several checks are marked observational in their `note` — the rate-limit burst (`A4.1`), the
 `from`-less gas estimate (`C3.1`), and the un-onboarded address probe (`D1.1`). These record

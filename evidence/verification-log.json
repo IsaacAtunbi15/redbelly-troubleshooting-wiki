@@ -1,0 +1,528 @@
+{
+  "harness": "redbelly-troubleshooting-wiki",
+  "version": "1.0.0",
+  "startedAt": "2026-08-08T15:52:20.916Z",
+  "finishedAt": "2026-08-08T15:52:43.535Z",
+  "node": "v20.20.2",
+  "platform": "linux x64",
+  "mode": {
+    "deep": false,
+    "sdk": false
+  },
+  "endpoints": {
+    "MAINNET_RPC": "https://governors.mainnet.redbelly.network",
+    "TESTNET_RPC": "https://governors.testnet.redbelly.network",
+    "MAINNET_API": "https://api.routescan.io/v2/network/mainnet/evm/151/etherscan/api",
+    "TESTNET_API": "https://api.routescan.io/v2/network/testnet/evm/153/etherscan/api"
+  },
+  "summary": {
+    "total": 33,
+    "pass": 30,
+    "fail": 2,
+    "skip": 1
+  },
+  "checks": [
+    {
+      "id": "A1.1",
+      "entry": "A1",
+      "description": "Mainnet eth_chainId is 0x97 (151), not 154",
+      "expected": "0x97",
+      "started": "2026-08-08T15:52:20.922Z",
+      "observed": "0x97",
+      "decimal": 151,
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:22.105Z"
+    },
+    {
+      "id": "A1.2",
+      "entry": "A1",
+      "description": "Testnet eth_chainId is 0x99 (153)",
+      "expected": "0x99",
+      "started": "2026-08-08T15:52:22.105Z",
+      "observed": "0x99",
+      "decimal": 153,
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:22.857Z"
+    },
+    {
+      "id": "A1.3",
+      "entry": "A1",
+      "description": "Public registry lists 151=mainnet(active), 154=TGE(no RPC)",
+      "expected": "151 active with RPC; 154 registered but rpc[] empty",
+      "started": "2026-08-08T15:52:22.857Z",
+      "observed": {
+        "151": {
+          "name": "Redbelly Network Mainnet",
+          "status": "active",
+          "rpc": [
+            "https://governors.mainnet.redbelly.network"
+          ]
+        },
+        "152": {
+          "name": "Redbelly Network Devnet",
+          "status": "incubating",
+          "rpc": []
+        },
+        "153": {
+          "name": "Redbelly Network Testnet",
+          "status": "active",
+          "rpc": [
+            "https://governors.testnet.redbelly.network"
+          ]
+        },
+        "154": {
+          "name": "Redbelly Network TGE",
+          "rpc": []
+        }
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:23.354Z"
+    },
+    {
+      "id": "A1.4",
+      "entry": "A1",
+      "description": "docs.redbelly.network rb-env page still publishes 154 as mainnet",
+      "expected": "page contains CHAIN_ID = 154",
+      "started": "2026-08-08T15:52:23.354Z",
+      "observed": {
+        "has154": false,
+        "has153": false,
+        "rpcMarkedComingSoon": true
+      },
+      "pass": false,
+      "note": "Upstream appears to have been corrected. Rewrite A1 before publishing.",
+      "status": "FAIL",
+      "finished": "2026-08-08T15:52:24.081Z"
+    },
+    {
+      "id": "A2.1",
+      "entry": "A2",
+      "description": "Bare RPC URL (no path) accepts JSON-RPC",
+      "expected": "HTTP 200 + result",
+      "started": "2026-08-08T15:52:24.082Z",
+      "observed": {
+        "httpStatus": 200,
+        "result": "0x2df81b"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:24.452Z"
+    },
+    {
+      "id": "A2.2",
+      "entry": "A2",
+      "description": "'/rpc' path suffix fails (the documented wrong shape)",
+      "expected": "non-200, or no JSON-RPC result",
+      "started": "2026-08-08T15:52:24.453Z",
+      "observed": {
+        "httpStatus": 403,
+        "body": "<!doctype html><meta charset=\"utf-8\"><meta name=viewport content=\"width=device-width, initial-scale=1\"><title>403</title>403 Forbidden"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:24.929Z"
+    },
+    {
+      "id": "A2.3",
+      "entry": "A2",
+      "description": "Trailing slash is harmless",
+      "expected": "HTTP 200 + result",
+      "started": "2026-08-08T15:52:24.929Z",
+      "observed": {
+        "httpStatus": 200,
+        "result": "0x2df81b"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:25.892Z"
+    },
+    {
+      "id": "A3.1",
+      "entry": "A3",
+      "description": "DevNet chain 152 publishes no RPC endpoint",
+      "expected": "registry rpc[] empty for 152",
+      "started": "2026-08-08T15:52:25.892Z",
+      "observed": {
+        "name": "Redbelly Network Devnet",
+        "status": "incubating",
+        "rpc": []
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:26.043Z"
+    },
+    {
+      "id": "A3.2",
+      "entry": "A3",
+      "description": "Vine environments page marks DevNet deprecated",
+      "expected": "page contains 'deprecated'",
+      "started": "2026-08-08T15:52:26.043Z",
+      "observed": {
+        "mentionsDevnet": true,
+        "mentionsDeprecated": true
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:26.930Z"
+    },
+    {
+      "id": "A4.1",
+      "entry": "A4",
+      "description": "Burst of 40 parallel calls — observe rate-limit behaviour",
+      "expected": "record whether HTTP 429 occurs (observational)",
+      "started": "2026-08-08T15:52:26.930Z",
+      "observed": {
+        "requests": 40,
+        "statusTally": {
+          "200": 40
+        },
+        "rateLimited": false
+      },
+      "pass": true,
+      "note": "No 429 at this burst size. A4 is written as a defensive pattern, not a claim that a specific limit was hit. Rephrase A4 if it implies otherwise.",
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:28.774Z"
+    },
+    {
+      "id": "B1.1",
+      "entry": "B1",
+      "description": "Hex chain IDs in wallet_addEthereumChain match the RPCs",
+      "expected": "0x97->151, 0x99->153",
+      "started": "2026-08-08T15:52:28.775Z",
+      "observed": {
+        "0x97": 151,
+        "0x99": 153
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:28.776Z"
+    },
+    {
+      "id": "B2.1",
+      "entry": "B2",
+      "description": "Mainnet RPC would reject a submitted chain ID of 154",
+      "expected": "reported chain id != 154",
+      "started": "2026-08-08T15:52:28.776Z",
+      "observed": {
+        "reportedByRpc": "0x97",
+        "reportedDecimal": 151,
+        "submittedByDocs": 154
+      },
+      "pass": true,
+      "note": "This is the exact mismatch MetaMask reports as 'Chain ID returned by the custom network does not match the submitted chain ID.'",
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:29.452Z"
+    },
+    {
+      "id": "B3.1",
+      "entry": "B3",
+      "description": "Mainnet Routescan API is reachable and chain-correct",
+      "expected": "status=1 from stats module",
+      "started": "2026-08-08T15:52:29.452Z",
+      "observed": {
+        "status": "1",
+        "message": "OK",
+        "result": "10000000000000000000000000000"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:29.780Z"
+    },
+    {
+      "id": "B3.2",
+      "entry": "B3",
+      "description": "Testnet Routescan API base resolves (distinct from mainnet)",
+      "expected": "responds in Etherscan format, not 'chain not supported'",
+      "started": "2026-08-08T15:52:29.781Z",
+      "observed": {
+        "status": "0",
+        "message": "NOTOK",
+        "result": "Contract source code not verified"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:29.890Z"
+    },
+    {
+      "id": "C1.1",
+      "entry": "C1",
+      "description": "Mainnet gas price is ~5 orders of magnitude above Ethereum norms",
+      "expected": "gasPrice > 1000 gwei",
+      "started": "2026-08-08T15:52:29.891Z",
+      "observed": {
+        "hex": "0x962477744fe0",
+        "wei": "165083367100384",
+        "gwei": 165083.367,
+        "rbntForSimpleTransfer": 3.466751,
+        "impliedUsdPerRbnt": 0.00288455
+      },
+      "pass": true,
+      "note": "Cross-check: 21000 gas x published unit price of US$0.000000476190476190 = US$0.01, which is what the docs state. The gwei figure floats with the RBNT price; the USD cost does not.",
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:30.293Z"
+    },
+    {
+      "id": "C1.2",
+      "entry": "C1",
+      "description": "Testnet gas price readable",
+      "expected": "hex quantity returned",
+      "started": "2026-08-08T15:52:30.294Z",
+      "observed": {
+        "hex": "0x962477744fe0",
+        "gwei": "165083.367"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:30.680Z"
+    },
+    {
+      "id": "C1.3",
+      "entry": "C1",
+      "description": "USD gas budgeting formula matches the documented unit price",
+      "expected": "21000 gas => US$0.01",
+      "started": "2026-08-08T15:52:30.680Z",
+      "observed": {
+        "gas": 21000,
+        "unitPriceUsd": 4.7619047619e-7,
+        "totalUsd": 0.01
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:30.680Z"
+    },
+    {
+      "id": "C3.1",
+      "entry": "C3",
+      "description": "eth_estimateGas without 'from' behaves differently to with 'from'",
+      "expected": "omitting 'from' degrades or fails the estimate",
+      "started": "2026-08-08T15:52:30.680Z",
+      "observed": {
+        "withFrom": "0x5f12",
+        "withoutFrom": "0x5f12"
+      },
+      "pass": true,
+      "note": "Observational. Records the node's actual behaviour so C3's claim about 'from' is stated to match it rather than to match EVM folklore.",
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:31.432Z"
+    },
+    {
+      "id": "C4.1",
+      "entry": "C4",
+      "description": "latest vs pending nonce are both queryable",
+      "expected": "both return hex quantities",
+      "started": "2026-08-08T15:52:31.432Z",
+      "observed": {
+        "latest": "0x0",
+        "pending": "0x0"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:32.175Z"
+    },
+    {
+      "id": "D1.1",
+      "entry": "D1",
+      "description": "A random un-onboarded address cannot estimate a self-transfer",
+      "expected": "estimate fails or returns an error for a permissionless address",
+      "started": "2026-08-08T15:52:32.176Z",
+      "observed": {
+        "httpStatus": 200,
+        "result": "0x5208",
+        "raw": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":\"0x5208\"}\n"
+      },
+      "pass": true,
+      "note": "Estimate succeeded for an un-onboarded address. D1 must be rewritten to match: the permission gate is not enforced at estimation time on this endpoint.",
+      "errored": false,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:32.552Z"
+    },
+    {
+      "id": "D1.2",
+      "entry": "D1",
+      "description": "Network access dApp is reachable",
+      "expected": "HTTP 200",
+      "started": "2026-08-08T15:52:32.552Z",
+      "observed": {
+        "status": 200,
+        "url": "https://access.redbelly.network/"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:33.411Z"
+    },
+    {
+      "id": "D2.1",
+      "entry": "D2",
+      "description": "Faucet host is reachable",
+      "expected": "HTTP 200",
+      "started": "2026-08-08T15:52:33.412Z",
+      "observed": {
+        "status": 200,
+        "url": "https://redbelly.faucetme.pro/"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:34.968Z"
+    },
+    {
+      "id": "F1.1",
+      "entry": "F1",
+      "description": "Routescan exposes the Etherscan verification API on testnet 153",
+      "expected": "checkverifystatus answers in Etherscan format",
+      "started": "2026-08-08T15:52:34.970Z",
+      "observed": {
+        "status": "0",
+        "message": "NOTOK",
+        "result": "Verification not found"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:35.418Z"
+    },
+    {
+      "id": "F1.2",
+      "entry": "F1",
+      "description": "Routescan exposes the same API on mainnet 151",
+      "expected": "checkverifystatus answers in Etherscan format",
+      "started": "2026-08-08T15:52:35.418Z",
+      "observed": {
+        "status": "0",
+        "message": "NOTOK",
+        "result": "Verification not found"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:35.521Z"
+    },
+    {
+      "id": "F1.3",
+      "entry": "F1",
+      "description": "Etherscan's own multichain list does NOT cover Redbelly",
+      "expected": "151 and 153 absent from api.etherscan.io/v2/chainlist",
+      "started": "2026-08-08T15:52:35.521Z",
+      "observed": {
+        "totalChains": 64,
+        "has151": false,
+        "has153": false
+      },
+      "pass": true,
+      "note": "Confirms why hardhat-verify errors with 'network ... is not supported' until a chainDescriptors entry supplies the Routescan apiUrl.",
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:36.381Z"
+    },
+    {
+      "id": "G1.1",
+      "entry": "G1",
+      "description": "@redbellynetwork/eligibility-sdk is absent from the public npm registry",
+      "expected": "HTTP 404 from registry.npmjs.org",
+      "started": "2026-08-08T15:52:36.383Z",
+      "observed": {
+        "status": 404
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:37.013Z"
+    },
+    {
+      "id": "G1.2",
+      "entry": "G1",
+      "description": "No @redbellynetwork packages are published on public npm",
+      "expected": "search returns 0 results",
+      "started": "2026-08-08T15:52:37.013Z",
+      "observed": {
+        "total": 0,
+        "names": []
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:38.002Z"
+    },
+    {
+      "id": "G2.1",
+      "entry": "G2",
+      "description": "GitHub Packages rejects an unauthenticated request",
+      "expected": "HTTP 401",
+      "started": "2026-08-08T15:52:38.002Z",
+      "observed": {
+        "status": 401,
+        "body": "{\"error\":\"authentication token not provided\"}\n"
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:38.730Z"
+    },
+    {
+      "id": "G2.2",
+      "entry": "G2",
+      "description": "Official installation page publishes an .npmrc auth line missing '//'",
+      "expected": "page contains 'npm.pkg.github.com/:_authToken' without leading slashes",
+      "started": "2026-08-08T15:52:38.730Z",
+      "observed": {
+        "hasBrokenForm": false,
+        "hasCorrectForm": false
+      },
+      "pass": false,
+      "note": "Upstream corrected. Rewrite or cut G2 before publishing.",
+      "status": "FAIL",
+      "finished": "2026-08-08T15:52:39.350Z"
+    },
+    {
+      "id": "G3.1",
+      "entry": "G3",
+      "description": "Documented quickstart repo is not publicly clonable",
+      "expected": "GitHub API 404 for redbellynetwork/eligibility-sdk-quickstart",
+      "started": "2026-08-08T15:52:39.351Z",
+      "observed": {
+        "status": 404
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:39.991Z"
+    },
+    {
+      "id": "G3.2",
+      "entry": "G3",
+      "description": "Getting-started page still instructs cloning that repo",
+      "expected": "page contains the clone URL",
+      "started": "2026-08-08T15:52:39.991Z",
+      "observed": {
+        "referencesQuickstartRepo": true,
+        "mentionsUnderDevelopmentFaucet": true
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:40.332Z"
+    },
+    {
+      "id": "G4.1",
+      "entry": "G4",
+      "description": "Credential JSON-LD schema URLs used in SDK queries resolve",
+      "expected": "HTTP 200 for each schema",
+      "started": "2026-08-08T15:52:40.332Z",
+      "observed": {
+        "AMLCTFCredential": 200,
+        "PassportCredential": 200,
+        "ProofOfAddressCredential": 200,
+        "EssentialIdCredential": 200
+      },
+      "pass": true,
+      "status": "PASS",
+      "finished": "2026-08-08T15:52:43.534Z"
+    },
+    {
+      "id": "G4.2",
+      "entry": "G4",
+      "description": "Authenticated GitHub Packages fetch (needs GITHUB_TOKEN)",
+      "expected": "skipped",
+      "started": "2026-08-08T15:52:43.534Z",
+      "skipped": true,
+      "observed": "GITHUB_TOKEN not set",
+      "pass": false,
+      "status": "SKIP",
+      "finished": "2026-08-08T15:52:43.534Z"
+    }
+  ]
+}
