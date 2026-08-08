@@ -44,7 +44,11 @@ Both statements are true and answer different questions — building is permissi
 per-address write access is not. That distinction is now stated in the guide, where it is
 likely to save readers the same confusion.
 
-Full record: [`03-VALIDATION-TABLE.md`](03-VALIDATION-TABLE.md).
+Full record: [`03-VALIDATION-TABLE.md`](03-VALIDATION-TABLE.md). Screenshots of the exchange
+are in [`../evidence/screenshots/`](../evidence/screenshots/), filenames timestamped to the
+minute each message was sent: `Screenshot_2026-08-08_163403.png` (the post),
+`Screenshot_2026-08-08_163627.png` (first reply), `Screenshot_2026-08-08_165306.png`
+(follow-up).
 
 ---
 

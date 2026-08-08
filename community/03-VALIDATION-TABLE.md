@@ -18,7 +18,7 @@ in this venue.
 | Why Telegram | The Discord has no developer channel and the team routes technical questions to Telegram — evidenced in [`../evidence/channel-analysis.md`](../evidence/channel-analysis.md). Telegram is named in the task's own infrastructure list |
 | Date posted | 8 August 2026 |
 | Shared | Published guide, all 22 entries, plus four specific questions for confirmation |
-| Screenshot | `../evidence/screenshots/telegram-post.png` |
+| Screenshot | `../evidence/screenshots/Screenshot_2026-08-08_163403.png` (post, 16:34) |
 
 ---
 
@@ -29,7 +29,7 @@ in this venue.
 | Handle | Appie |
 | Role | Moderator, Redbelly Network Telegram |
 | Date of response | 8 August 2026, 16:36 |
-| Screenshots | `../evidence/screenshots/telegram-reply-appie.png`, `../evidence/screenshots/telegram-reply-appie-2.png` |
+| Screenshots | `../evidence/screenshots/Screenshot_2026-08-08_163627.png` (reply 1, 16:36) · `../evidence/screenshots/Screenshot_2026-08-08_165306.png` (reply 2, 16:52) |
 
 **What they said (verbatim):**
 
