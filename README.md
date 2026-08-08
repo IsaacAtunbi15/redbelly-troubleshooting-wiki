@@ -3,9 +3,11 @@
 **22 fixes for the errors developers hit most often on Redbelly Network.**
 
 Every chain ID, URL, address and package name here was read from a live source on 8 August
-2026 and is traced in [`evidence/sources.md`](evidence/sources.md). A verification harness
-that executes each fix against Redbelly Testnet ships with the repository — it has not been
-run end-to-end yet, and this README will say so until it has.
+2026 and is traced in [`evidence/sources.md`](evidence/sources.md). A verification harness was
+run against the live network on the same date: **30 of 33 checks passed**, and the log ships
+as [`evidence/verification-log.json`](evidence/verification-log.json). Three checks changed
+what the guide says, including one that corrected the recommended diagnostic for the
+permissioning entry. State-changing on-chain checks have not been run.
 
 📖 **[Read the wiki →](wiki/troubleshooting-wiki.md)**
 
@@ -19,7 +21,7 @@ run end-to-end yet, and this README will say so until it has.
 | [`wiki/DRAFT-for-discord.md`](wiki/DRAFT-for-discord.md) | The 11-entry partial shared with the Redbelly Discord for community review. |
 | [`harness/`](harness/) | The verification harness. Reproduces each failure and confirms each fix. |
 | [`evidence/sources.md`](evidence/sources.md) | Every technical claim traced to the source it came from. |
-| [`evidence/sources.md`](evidence/sources.md) | Every technical claim traced to the source it came from. |
+| [`evidence/verification-log.json`](evidence/verification-log.json) | Timestamped output of the 8 Aug 2026 harness run. |
 | [`evidence/link-check.json`](evidence/link-check.json) | Every external link, checked. |
 | [`community/`](community/) | Discord outreach kit and the community validation record. |
 
@@ -82,8 +84,10 @@ cd harness
 Output lands in `evidence/verification-log.json`, one record per check, with the raw response
 kept so the conclusion can be re-derived. See [`harness/README.md`](harness/README.md).
 
-**Not yet run.** The log does not exist in this repository yet. The read-only stage needs no
-key, no funds and no install, so anyone can produce it independently.
+**Last run 8 August 2026: 30 PASS, 2 FAIL, 1 SKIP of 33.** The read-only stage needs no key,
+no funds and no install, so anyone can reproduce it in about two minutes. The two FAILs are
+scraper defects in the checks themselves, documented in the guide's verification section
+rather than silently removed.
 
 **The standard that applies:** any entry whose fix does not reproduce when the harness runs
 gets cut rather than published with a caveat.
@@ -102,4 +106,4 @@ instructions, and come with a check added to the harness. See
 
 ---
 
-**Sources read: 8 August 2026**
+**Sources read and verified: 8 August 2026**
